@@ -23,10 +23,12 @@ toast.success("Login successful")
 router.push("/profile")
 
 }catch(err:any){
-  console.log("login error",err.message)
- 
+ console.error(err);
+  toast.error(err.response?.data?.error || "Login failed");
+  
 }
 }
+
 
   return (
     <div className='flex *:flex-col items-center justify-center h-screen bg-gray-900'>

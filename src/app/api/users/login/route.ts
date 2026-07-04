@@ -2,7 +2,7 @@ import connect from "@/dbConfig/dbCongif";
 import User from "@/models/userModel";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import { sign } from "jsonwebtoken";
 
 connect();
 
@@ -10,6 +10,10 @@ export async function POST(request:NextRequest){
 try{
   const reqBody =await request.json();
   const {email,password}=reqBody;
+
+  if (!process.env.TOKEN_SECRET) {
+    return NextResponse.json({ error: "TOKEN_SECRET is not configured" }, { status: 500 });
+  }
 
   const user= await User.findOne({email});
   if(!user){
@@ -26,7 +30,7 @@ try{
     username:user.username
   }
 
-  const token=await jwt.sign(tokendata,process.env.TOKEN_SECRET!,{expiresIn:"1d"})
+  const token=sign(tokendata,process.env.TOKEN_SECRET!,{expiresIn:"1d"})
   const response=NextResponse.json({message:"Login successful",token},{status:200})
   response.cookies.set("token",token,
     {
@@ -37,6 +41,7 @@ try{
 
 }catch(err:any){
 console.log('Error in login route:',err);
+return NextResponse.json({ error: err?.message || "Login failed" }, { status: 500 });
 }
 
 }
